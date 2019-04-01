@@ -6,7 +6,7 @@ PODS:
 
 DEPENDENCIES:
   - EVGPUImage2 (~> 0.2.0)
-  - GPUImage
+  - GPUImage (~> 0.1.7)
   - QKMRZParser (~> 1.0.1)
   - SwiftyTesseract (~> 2.2.0)
 
@@ -23,6 +23,6 @@ SPEC CHECKSUMS:
   QKMRZParser: 07921dbffa7e4064406113731bc0f1f5e6210bce
   SwiftyTesseract: 44a8f4b2b7e5f22b997919f935261d22d28a4917
 
-PODFILE CHECKSUM: f2c1f85af01133e2ff9907a252c1f10b52aafeea
+PODFILE CHECKSUM: f398c6c11292c9e58f0e120714829dbc25804373
 
 COCOAPODS: 1.6.1

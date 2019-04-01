@@ -3,8 +3,8 @@ source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
 target 'QKMRZScanner' do
-    pod 'EVGPUImage2', '~> 0.2.0'
-    pod 'QKMRZParser', '~> 1.0.1'
+    pod 'EVGPUImage2',     '~> 0.2.0'
+    pod 'QKMRZParser',     '~> 1.0.1'
     pod 'SwiftyTesseract', '~> 2.2.0'
-    pod 'GPUImage'
+    pod 'GPUImage',        '~> 0.1.7'
 end
