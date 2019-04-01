@@ -11,6 +11,7 @@ import SwiftyTesseract
 import QKMRZParser
 import EVGPUImage2
 import AudioToolbox
+import GPUImage
 
 public protocol QKMRZScannerViewDelegate: class {
     func mrzScannerView(_ mrzScannerView: QKMRZScannerView, didFind scanResult: QKMRZScanResult)
@@ -24,11 +25,22 @@ public class QKMRZScannerView: UIView {
     fileprivate let videoOutput = AVCaptureVideoDataOutput()
     fileprivate let videoPreviewLayer = AVCaptureVideoPreviewLayer()
     fileprivate let cutoutView = QKCutoutView()
-    fileprivate var isScanningTD1Format = false
     fileprivate var isScanningPaused = false
     fileprivate var observer: NSKeyValueObservation?
     @objc public dynamic var isScanning = false
     public weak var delegate: QKMRZScannerViewDelegate?
+    
+    // post processing filters
+    let defaultExposure: Float = 1.5
+    private var averageColorFilter: GPUImageAverageColor!
+    private var lastExposure: CGFloat = 1.5
+    private let enableAdaptativeExposure = true
+    
+    let exposureFilter = GPUImageExposureFilter()
+    let highlightShadowFilter = GPUImageHighlightShadowFilter()
+    let saturationFilter = GPUImageSaturationFilter()
+    let contrastFilter = GPUImageContrastFilter()
+    let adaptiveThresholdFilter = GPUImageAdaptiveThresholdFilter()
     
     public var cutoutRect: CGRect {
         return cutoutView.cutoutRect
@@ -84,7 +96,7 @@ public class QKMRZScannerView: UIView {
     fileprivate func mrz(from cgImage: CGImage) -> QKMRZResult? {
         let imageWidth = CGFloat(cgImage.width)
         let imageHeight = CGFloat(cgImage.height)
-        let mrzRegionHeight = isScanningTD1Format ? (imageHeight * 0.28) : (imageHeight * 0.25) // TD1 has 3 lines so expand the area a bit
+        let mrzRegionHeight = imageHeight * 0.28
         let padding = (0.04 * imageHeight) // Try to make the mrz image as small as possible
         let croppingRect = CGRect(origin: CGPoint(x: padding, y: (imageHeight - mrzRegionHeight)), size: CGSize(width: (imageWidth - padding * 2), height: (mrzRegionHeight - padding)))
         let mrzRegionImage = UIImage(cgImage: cgImage.cropping(to: croppingRect)!)
@@ -93,7 +105,6 @@ public class QKMRZScannerView: UIView {
         tesseract.performOCR(on: preprocessImage(mrzRegionImage)) { recognizedString = $0 }
         
         if let string = recognizedString, let mrzLines = mrzLines(from: string) {
-            isScanningTD1Format = (mrzLines.last!.count == 30) // TD1 lines are 30 chars long
             return mrzParser.parse(mrzLines: mrzLines)
         }
         
@@ -176,7 +187,7 @@ public class QKMRZScannerView: UIView {
             cutoutView.bottomAnchor.constraint(equalTo: bottomAnchor),
             cutoutView.leftAnchor.constraint(equalTo: leftAnchor),
             cutoutView.rightAnchor.constraint(equalTo: rightAnchor)
-        ])
+            ])
     }
     
     fileprivate func initCaptureSession() {
@@ -309,5 +320,70 @@ extension QKMRZScannerView: AVCaptureVideoDataOutputSampleBufferDelegate {
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             }
         }
+    }
+}
+
+extension QKMRZScannerView {
+    private func filterImage(with sourceImage: UIImage) -> UIImage {
+        var filterImage: UIImage = sourceImage
+        exposureFilter.exposure = self.lastExposure
+        filterImage = exposureFilter.image(byFilteringImage: filterImage)
+        filterImage = highlightShadowFilter.image(byFilteringImage: filterImage)
+        filterImage = saturationFilter.image(byFilteringImage: filterImage)
+        filterImage = contrastFilter.image(byFilteringImage: filterImage)
+        filterImage = adaptiveThresholdFilter.image(byFilteringImage: filterImage)
+        self.evaluateExposure(image: filterImage)
+        return filterImage
+    }
+    
+    func evaluateExposure(image: UIImage) {
+        if !self.enableAdaptativeExposure || self.averageColorFilter != nil {
+            return
+        }
+        
+        DispatchQueue.global(qos: .background).async {
+            self.averageColorFilter = GPUImageAverageColor()
+            self.averageColorFilter.colorAverageProcessingFinishedBlock = {red, green, blue, alpha, time in
+                let lighting = blue + green + red
+                let currentExposure = self.lastExposure
+                
+                // The stable color is between 2.75 and 2.85. Otherwise change the exposure
+                if lighting < 2.75 {
+                    self.lastExposure = currentExposure + (2.80 - lighting) * 2
+                }
+                if lighting > 2.85 {
+                    self.lastExposure = currentExposure - (lighting - 2.80) * 2
+                }
+                
+                if self.lastExposure > 2 {
+                    self.lastExposure = CGFloat(self.defaultExposure)
+                }
+                if self.lastExposure < -2 {
+                    self.lastExposure = CGFloat(self.defaultExposure)
+                }
+                
+                self.averageColorFilter = nil
+            }
+            self.averageColorFilter.image(byFilteringImage: image)
+        }
+    }
+}
+
+extension UIImage {
+    func convertToGrayscale() -> UIImage {
+        let colorSpace: CGColorSpace = CGColorSpaceCreateDeviceGray()
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue)
+        let context = CGContext(data: nil,
+                                width: Int(UInt(size.width)),
+                                height: Int(UInt(size.height)),
+                                bitsPerComponent: 8,
+                                bytesPerRow: 0,
+                                space: colorSpace,
+                                bitmapInfo: bitmapInfo.rawValue)
+        context?.draw(cgImage!,
+                      in: CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
+        let imageRef: CGImage = context!.makeImage()!
+        let newImage: UIImage = UIImage(cgImage: imageRef)
+        return newImage
     }
 }
