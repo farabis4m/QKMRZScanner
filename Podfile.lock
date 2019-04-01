@@ -1,28 +1,24 @@
 PODS:
   - EVGPUImage2 (0.2.0)
-  - GPUImage (0.1.7)
   - QKMRZParser (1.0.1)
   - SwiftyTesseract (2.2.0)
 
 DEPENDENCIES:
   - EVGPUImage2 (~> 0.2.0)
-  - GPUImage (~> 0.1.7)
   - QKMRZParser (~> 1.0.1)
   - SwiftyTesseract (~> 2.2.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - EVGPUImage2
-    - GPUImage
     - QKMRZParser
     - SwiftyTesseract
 
 SPEC CHECKSUMS:
   EVGPUImage2: 1e057f25fbab811b8a9e98d19f96bbd5eb434913
-  GPUImage: 733a5f0fab92df9de1c37ba9df520a833ccb406d
   QKMRZParser: 07921dbffa7e4064406113731bc0f1f5e6210bce
   SwiftyTesseract: 44a8f4b2b7e5f22b997919f935261d22d28a4917
 
-PODFILE CHECKSUM: 94dbc7532ff72e5eeb9254b2ff5a56abe0a56cea
+PODFILE CHECKSUM: 721c02ab3e20c8df92b34b81a232afd23b6a2eec
 
 COCOAPODS: 1.6.1

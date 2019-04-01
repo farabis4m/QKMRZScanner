@@ -11,7 +11,6 @@ import SwiftyTesseract
 import QKMRZParser
 import EVGPUImage2
 import AudioToolbox
-import GPUImage
 
 public protocol QKMRZScannerViewDelegate: class {
     func mrzScannerView(_ mrzScannerView: QKMRZScannerView, didFind scanResult: QKMRZScanResult)
@@ -29,18 +28,6 @@ public class QKMRZScannerView: UIView {
     fileprivate var observer: NSKeyValueObservation?
     @objc public dynamic var isScanning = false
     public weak var delegate: QKMRZScannerViewDelegate?
-    
-    // post processing filters
-    let defaultExposure: Float = 1.5
-    private var averageColorFilter: GPUImageAverageColor!
-    private var lastExposure: CGFloat = 1.5
-    private let enableAdaptativeExposure = true
-    
-    let exposureFilter = GPUImageExposureFilter()
-    let highlightShadowFilter = GPUImageHighlightShadowFilter()
-    let saturationFilter = GPUImageSaturationFilter()
-    let contrastFilter = GPUImageContrastFilter()
-    let adaptiveThresholdFilter = GPUImageAdaptiveThresholdFilter()
     
     public var cutoutRect: CGRect {
         return cutoutView.cutoutRect
@@ -319,52 +306,6 @@ extension QKMRZScannerView: AVCaptureVideoDataOutputSampleBufferDelegate {
                 self.delegate?.mrzScannerView(self, didFind: scanResult)
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             }
-        }
-    }
-}
-
-extension QKMRZScannerView {
-    private func filterImage(with sourceImage: UIImage) -> UIImage {
-        var filterImage: UIImage = sourceImage
-        exposureFilter.exposure = self.lastExposure
-        filterImage = exposureFilter.image(byFilteringImage: filterImage)
-        filterImage = highlightShadowFilter.image(byFilteringImage: filterImage)
-        filterImage = saturationFilter.image(byFilteringImage: filterImage)
-        filterImage = contrastFilter.image(byFilteringImage: filterImage)
-        filterImage = adaptiveThresholdFilter.image(byFilteringImage: filterImage)
-        self.evaluateExposure(image: filterImage)
-        return filterImage
-    }
-    
-    func evaluateExposure(image: UIImage) {
-        if !self.enableAdaptativeExposure || self.averageColorFilter != nil {
-            return
-        }
-        
-        DispatchQueue.global(qos: .background).async {
-            self.averageColorFilter = GPUImageAverageColor()
-            self.averageColorFilter.colorAverageProcessingFinishedBlock = {red, green, blue, alpha, time in
-                let lighting = blue + green + red
-                let currentExposure = self.lastExposure
-                
-                // The stable color is between 2.75 and 2.85. Otherwise change the exposure
-                if lighting < 2.75 {
-                    self.lastExposure = currentExposure + (2.80 - lighting) * 2
-                }
-                if lighting > 2.85 {
-                    self.lastExposure = currentExposure - (lighting - 2.80) * 2
-                }
-                
-                if self.lastExposure > 2 {
-                    self.lastExposure = CGFloat(self.defaultExposure)
-                }
-                if self.lastExposure < -2 {
-                    self.lastExposure = CGFloat(self.defaultExposure)
-                }
-                
-                self.averageColorFilter = nil
-            }
-            self.averageColorFilter.image(byFilteringImage: image)
         }
     }
 }
