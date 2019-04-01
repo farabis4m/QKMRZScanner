@@ -89,7 +89,7 @@ public class QKMRZScannerView: UIView {
         let mrzRegionImage = UIImage(cgImage: cgImage.cropping(to: croppingRect)!)
         var recognizedString: String?
         
-        tesseract.performOCR(on: preprocessImage(mrzRegionImage)) { recognizedString = $0 }
+        tesseract.performOCR(on: mrzRegionImage.convertToGrayscale()) { recognizedString = $0 }
         
         if let string = recognizedString, let mrzLines = mrzLines(from: string) {
             return mrzParser.parse(mrzLines: mrzLines)
