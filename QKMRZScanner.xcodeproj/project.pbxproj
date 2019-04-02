@@ -15,6 +15,7 @@
 		12832C242167492A00D132D4 /* AVCaptureVideoOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12832C232167492A00D132D4 /* AVCaptureVideoOrientation.swift */; };
 		12832C282167519000D132D4 /* QKCutoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12832C272167519000D132D4 /* QKCutoutView.swift */; };
 		5C45248B5974315AC8BE1E35 /* Pods_QKMRZScanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F58CF4674449175F89B65B8 /* Pods_QKMRZScanner.framework */; };
+		77BC3297225350C600DC2CE1 /* eng.traineddata in Resources */ = {isa = PBXBuildFile; fileRef = 77BC3296225350C600DC2CE1 /* eng.traineddata */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		12832C232167492A00D132D4 /* AVCaptureVideoOrientation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVCaptureVideoOrientation.swift; sourceTree = "<group>"; };
 		12832C272167519000D132D4 /* QKCutoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKCutoutView.swift; sourceTree = "<group>"; };
 		6F58CF4674449175F89B65B8 /* Pods_QKMRZScanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QKMRZScanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		77BC3296225350C600DC2CE1 /* eng.traineddata */ = {isa = PBXFileReference; lastKnownFileType = file; path = eng.traineddata; sourceTree = "<group>"; };
 		DA7784BC05891FFB8A38C353 /* Pods-QKMRZScanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QKMRZScanner.release.xcconfig"; path = "Pods/Target Support Files/Pods-QKMRZScanner/Pods-QKMRZScanner.release.xcconfig"; sourceTree = "<group>"; };
 		F6B140B9A4C7437306FFF880 /* Pods-QKMRZScanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QKMRZScanner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-QKMRZScanner/Pods-QKMRZScanner.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -49,6 +51,7 @@
 		121B5359216FBBBF000F7123 /* tessdata */ = {
 			isa = PBXGroup;
 			children = (
+				77BC3296225350C600DC2CE1 /* eng.traineddata */,
 				123BDEFF216FF0C2000CF6CF /* ocrb.traineddata */,
 			);
 			path = tessdata;
@@ -191,6 +194,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77BC3297225350C600DC2CE1 /* eng.traineddata in Resources */,
 				123BDF00216FF0C6000CF6CF /* ocrb.traineddata in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
